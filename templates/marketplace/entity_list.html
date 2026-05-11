@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}{{ model_label }}{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="title-group">
+        <span class="entity-avatar tone-{{ entity.tone }}">{{ entity.initial }}</span>
+        <div>
+            <span class="eyebrow">{{ entity.singular }}</span>
+            <h1>{{ model_label }}</h1>
+            <p>{{ entity.description }}</p>
+        </div>
+    </div>
+    <a class="btn" href="{% url 'marketplace:'|add:model_slug|add:'_create' %}">
+        <span class="btn-mark">+</span>
+        Ajouter
+    </a>
+</section>
+
+<div class="toolbar">
+    <span class="muted">{{ total_count }} element(s) enregistre(s)</span>
+</div>
+
+{% if rows %}
+    <section class="table-panel">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Element</th>
+                    <th>Resume</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>
+                            <span class="record-title">{{ row.object }}</span>
+                            <span class="muted">ID {{ row.object.pk }}</span>
+                        </td>
+                        <td>
+                            <div class="field-chips">
+                                {% for label, value in row.summary %}
+                                    <span class="field-chip">
+                                        <strong>{{ label }}</strong>
+                                        <span>{{ value }}</span>
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_detail' row.object.pk %}">
+                                    <span class="btn-mark">V</span>
+                                    Voir
+                                </a>
+                                <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_update' row.object.pk %}">
+                                    <span class="btn-mark">M</span>
+                                    Modifier
+                                </a>
+                                <a class="btn btn-danger" href="{% url 'marketplace:'|add:model_slug|add:'_delete' row.object.pk %}">
+                                    <span class="btn-mark">X</span>
+                                    Supprimer
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% else %}
+    <div class="empty-state">
+        <strong>Aucun element</strong>
+        <p class="muted">La table {{ model_label }} est encore vide.</p>
+        <a class="btn" href="{% url 'marketplace:'|add:model_slug|add:'_create' %}">
+            <span class="btn-mark">+</span>
+            Ajouter
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

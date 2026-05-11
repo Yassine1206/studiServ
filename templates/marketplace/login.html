@@ -1,0 +1,18 @@
+{% extends "base.html" %} {% block title %}{{ role_title }} - StudiServ{% endblock %} {% block content %}
+StudiServ
+{{ role_title }}
+{{ role_description }}
+
+{% if show_register_link %} Pas encore de compte ? S'inscrire {% endif %} Accueil
+{% csrf_token %} {% if next %} {% endif %} {% if form.non_field_errors %}
+{% for error in form.non_field_errors %}
+{{ error }}
+
+{% endfor %}
+{% endif %}
+Adresse e-mail {{ form.username }} {% if form.username.errors %}{{ form.username.errors.0 }}{% endif %}
+Mot de passe {{ form.password }} {% if form.password.errors %}{{ form.password.errors.0 }}{% endif %}
+→ Se connecter
+Connexion par adresse e-mail. Vous serez redirigé vers votre espace selon votre rôle.
+
+{% endblock %}

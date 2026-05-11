@@ -1,0 +1,152 @@
+/* ── Auth.css ────────────────────────────────────────────────── */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+}
+
+.auth-wrapper {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 560px;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+}
+
+.auth-wrapper--narrow {
+  max-width: 480px;
+}
+
+/* Branding côté gauche */
+.auth-brand {
+  flex: 1;
+  background: linear-gradient(160deg, #6366f1 0%, #8b5cf6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem;
+  color: white;
+}
+.brand-title { font-size: 2.5rem; font-weight: 800; margin: 0 0 0.5rem; }
+.brand-subtitle { font-size: 1.1rem; opacity: 0.9; margin: 0 0 1rem; }
+.brand-description { opacity: 0.8; line-height: 1.6; margin-bottom: 1.5rem; }
+.brand-features { display: flex; flex-direction: column; gap: 0.5rem; }
+.feature { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; }
+
+/* Formulaire côté droit */
+.auth-form-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.auth-form-box h2 { font-size: 1.6rem; margin: 0 0 0.25rem; color: #1e1b4b; }
+.form-subtitle    { color: #6b7280; margin: 0 0 1.5rem; font-size: 0.95rem; }
+
+/* Messages */
+.error-message {
+  background: #fef2f2; color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.75rem 1rem; border-radius: 8px;
+  margin-bottom: 1rem; font-size: 0.9rem;
+}
+.warning-message {
+  background: #fffbeb; color: #d97706;
+  border: 1px solid #fde68a;
+  padding: 0.6rem 1rem; border-radius: 8px;
+  margin-bottom: 0.75rem; font-size: 0.85rem;
+}
+.success-icon { font-size: 3rem; text-align: center; margin-bottom: 1rem; }
+
+/* Groupes de champ */
+.form-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.form-group label { font-size: 0.9rem; font-weight: 600; color: #374151; }
+.form-group input,
+.form-group select {
+  padding: 0.65rem 0.85rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+}
+.form-group small { color: #9ca3af; font-size: 0.8rem; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+/* Footer du formulaire (checkbox + lien) */
+.form-footer { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; }
+.forgot-link { color: #6366f1; text-decoration: none; }
+.forgot-link:hover { text-decoration: underline; }
+
+/* Boutons */
+.btn-primary {
+  width: 100%; padding: 0.75rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white; border: none; border-radius: 8px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-secondary {
+  display: block; width: 100%; padding: 0.75rem;
+  background: transparent; color: #6366f1;
+  border: 2px solid #6366f1; border-radius: 8px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  text-align: center; text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: #eef2ff; }
+
+.btn-back {
+  background: none; border: none; color: #6366f1;
+  cursor: pointer; font-size: 0.9rem; padding: 0; margin-bottom: 1rem;
+}
+
+.auth-divider { text-align: center; margin: 1rem 0; color: #9ca3af; font-size: 0.9rem; }
+.auth-footer  { text-align: center; margin-top: 1.5rem; color: #6b7280; font-size: 0.9rem; }
+.auth-footer a { color: #6366f1; text-decoration: none; font-weight: 600; }
+
+.terms-text { font-size: 0.78rem; color: #9ca3af; text-align: center; margin-top: 1rem; }
+.terms-text a { color: #6366f1; }
+
+/* Sélection de rôle */
+.role-selection { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.role-card {
+  border: 2px solid #e5e7eb; border-radius: 12px;
+  padding: 1.25rem; cursor: pointer; text-align: center;
+  transition: all 0.2s;
+}
+.role-card:hover { border-color: #6366f1; background: #f5f3ff; }
+.role-card.selected { border-color: #6366f1; background: #eef2ff; }
+.role-card .role-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.role-card h3 { margin: 0 0 0.25rem; font-size: 1rem; color: #1e1b4b; }
+.role-card p  { font-size: 0.8rem; color: #6b7280; margin: 0 0 0.75rem; }
+.role-benefits { list-style: none; padding: 0; margin: 0; text-align: left; }
+.role-benefits li { font-size: 0.8rem; color: #4b5563; padding: 0.15rem 0; }
+.role-benefits li::before { content: '✓ '; color: #6366f1; font-weight: bold; }
+
+@media (max-width: 640px) {
+  .auth-wrapper { flex-direction: column; }
+  .auth-brand   { display: none; }
+  .form-row     { grid-template-columns: 1fr; }
+  .role-selection { grid-template-columns: 1fr; }
+}

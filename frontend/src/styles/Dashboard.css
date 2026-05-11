@@ -1,0 +1,47 @@
+/* ── Dashboard.css ──────────────────────────────────────────── */
+.dashboard { display: flex; min-height: 100vh; background: #f9fafb; }
+.dashboard-content { flex: 1; padding: 2rem; overflow-y: auto; }
+.dashboard-header { margin-bottom: 2rem; }
+.dashboard-header h1 { font-size: 1.75rem; color: #1e1b4b; margin: 0 0 0.25rem; }
+.dashboard-header p  { color: #6b7280; margin: 0; }
+
+.tab-nav { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab-btn {
+  padding: 0.5rem 1rem; border: 1.5px solid #e5e7eb;
+  background: white; border-radius: 8px; cursor: pointer;
+  font-size: 0.9rem; color: #374151; transition: all 0.15s;
+}
+.tab-btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+.tab-btn:hover:not(.active) { border-color: #6366f1; color: #6366f1; }
+
+.data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.data-table th { background: #f3f4f6; padding: 0.75rem 1rem; text-align: left; font-size: 0.85rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.data-table td { padding: 0.85rem 1rem; border-top: 1px solid #f3f4f6; font-size: 0.9rem; color: #374151; }
+.data-table tr:hover td { background: #fafafa; }
+
+.status-badge {
+  display: inline-block; padding: 0.2rem 0.65rem;
+  border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+}
+.status-badge.active, .status-badge.completed { background: #d1fae5; color: #065f46; }
+.status-badge.pending     { background: #fef3c7; color: #92400e; }
+.status-badge.in_progress { background: #dbeafe; color: #1e40af; }
+.status-badge.suspended   { background: #fee2e2; color: #991b1b; }
+.status-badge.en_attente  { background: #fef3c7; color: #92400e; }
+
+.btn-action {
+  padding: 0.3rem 0.75rem; border: none; border-radius: 6px;
+  cursor: pointer; font-size: 0.8rem; font-weight: 600;
+  margin-right: 0.35rem; transition: opacity 0.15s;
+}
+.btn-action:hover { opacity: 0.8; }
+.btn-action.approve  { background: #d1fae5; color: #065f46; }
+.btn-action.suspend  { background: #fee2e2; color: #991b1b; }
+.btn-action.activate { background: #dbeafe; color: #1e40af; }
+
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.info-card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.07); }
+.info-card h3 { font-size: 0.85rem; color: #6b7280; margin: 0 0 0.25rem; }
+.info-card p  { font-size: 1.75rem; font-weight: 800; color: #1e1b4b; margin: 0; }
+
+.loading-state { text-align: center; padding: 3rem; color: #6b7280; }

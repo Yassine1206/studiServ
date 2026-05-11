@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object }}{% endblock %}
+
+{% block content %}
+<section class="detail-hero">
+    <div class="title-group">
+        <span class="entity-avatar tone-{{ entity.tone }}">{{ entity.initial }}</span>
+        <div>
+            <span class="eyebrow">{{ entity.singular }}</span>
+            <h1>{{ object }}</h1>
+            <p>{{ entity.description }}</p>
+        </div>
+    </div>
+    <div class="actions">
+        <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_list' %}">
+            <span class="btn-mark">R</span>
+            Retour
+        </a>
+        <a class="btn" href="{% url 'marketplace:'|add:model_slug|add:'_update' object.pk %}">
+            <span class="btn-mark">M</span>
+            Modifier
+        </a>
+    </div>
+</section>
+
+<div class="detail-grid">
+    <section class="detail-panel">
+        {% for label, value in fields %}
+            <div class="detail-row">
+                <strong>{{ label }}</strong>
+                <span class="detail-value">{{ value }}</span>
+            </div>
+        {% endfor %}
+        {% for label, values in many_to_many %}
+            <div class="detail-row">
+                <strong>{{ label }}</strong>
+                <span class="detail-value">
+                    {% for value in values %}
+                        {{ value }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        -
+                    {% endfor %}
+                </span>
+            </div>
+        {% endfor %}
+    </section>
+
+    <aside class="side-panel">
+        <h2>Informations</h2>
+        <p class="muted">Donnees enregistrees pour cet element.</p>
+        <div class="side-list">
+            <span class="side-pill">ID {{ object.pk }}</span>
+            <span class="side-pill">{{ model_label }}</span>
+        </div>
+    </aside>
+</div>
+{% endblock %}

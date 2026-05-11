@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}StudiServ - Accueil{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div>
+        <span class="eyebrow">Marketplace de services</span>
+        <h1>Trouver ou proposer un service etudiant</h1>
+        <p>StudiServ permet aux etudiants prestataires de publier des annonces dans une matiere ou un domaine precis, et aux consommateurs de demander, acheter, noter et recommander un service.</p>
+        <div class="hero-actions">
+            <a class="btn" href="{% url 'marketplace:login' %}">
+                <span class="btn-mark">L</span>
+                Login
+            </a>
+            <a class="btn btn-secondary" href="{% url 'marketplace:etudiant_dashboard' %}">
+                <span class="btn-mark">E</span>
+                Espace etudiant
+            </a>
+            <a class="btn btn-secondary" href="{% url 'marketplace:prestatire_dashboard' %}">
+                <span class="btn-mark">P</span>
+                Espace prestataire
+            </a>
+        </div>
+    </div>
+    <div class="hero-panel">
+        {% for stat in dashboard_stats %}
+            <div class="hero-stat">
+                <span class="muted">{{ stat.label }}</span>
+                <strong>{{ stat.value }}</strong>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="quick-grid">
+    {% for action in quick_actions %}
+        <a class="quick-card tone-{{ action.tone }}" href="{% url action.url_name %}">
+            <span class="quick-dot tone-{{ action.tone }}"></span>
+            <strong>{{ action.label }}</strong>
+            <span>{{ action.description }}</span>
+        </a>
+    {% endfor %}
+</section>
+
+<section class="entity-grid">
+    {% for card in cards %}
+        <a class="entity-card tone-{{ card.tone }}" href="{% url 'marketplace:'|add:card.slug|add:'_list' %}">
+            <div class="card-top">
+                <span class="card-icon tone-{{ card.tone }}">{{ card.initial }}</span>
+                <span class="card-count">{{ card.count }} element(s)</span>
+            </div>
+            <div>
+                <h2>{{ card.label }}</h2>
+                <p>{{ card.description }}</p>
+            </div>
+            <span class="card-link">Ouvrir</span>
+        </a>
+    {% endfor %}
+</section>
+{% endblock %}

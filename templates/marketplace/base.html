@@ -1,0 +1,10 @@
+{% load static %}
+SS StudiServ Services entre etudiants
+{% for item in nav_items %} {{ item.initial }} {{ item.label }} {{ item.singular }} {% endfor %}
+Marketplace Services, demandes et avis
+{% if request.user.is_authenticated %} {% with u=request.user %} {{ u.first_name|first|upper }}{{ u.last_name|first|upper }} {{ u.first_name }} {{ u.last_name }} {% if u.utilisateur.role %} {{ u.utilisateur.role }} {% endif %} {% if u.utilisateur.role == "PRESTATAIRE" %} PMon espace {% else %} EMon espace {% endif %} ← Déconnexion {% endwith %} {% else %} + S'inscrire → Se connecter {% endif %} {% if request.user.is_staff %} A Admin {% endif %}
+{% if messages %}
+{% for message in messages %}
+{{ message }}
+{% endfor %}
+{% endif %} {% block content %}{% endblock %}

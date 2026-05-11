@@ -1,0 +1,43 @@
+/* ── Home.css ───────────────────────────────────────────────── */
+.home { min-height: 100vh; background: #f9fafb; }
+
+.hero {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 60%, #a78bfa 100%);
+  padding: 5rem 1.5rem; text-align: center; color: white;
+}
+.hero h1 { font-size: 2.5rem; font-weight: 800; margin: 0 0 0.75rem; }
+.hero p  { font-size: 1.1rem; opacity: 0.9; margin: 0 0 2rem; }
+.hero-search { display: flex; gap: 0.75rem; max-width: 580px; margin: 0 auto; }
+.hero-search-input {
+  flex: 1; padding: 0.8rem 1rem; border: none; border-radius: 10px;
+  font-size: 1rem; outline: none;
+}
+.btn-large { padding: 0.8rem 1.75rem; font-size: 1rem; white-space: nowrap; }
+
+.categories { padding: 1.5rem; background: white; border-bottom: 1px solid #e5e7eb; }
+.container { max-width: 1200px; margin: 0 auto; }
+.category-filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.category-btn {
+  padding: 0.45rem 1rem; border: 1.5px solid #e5e7eb; background: white;
+  border-radius: 999px; cursor: pointer; font-size: 0.85rem; color: #374151;
+  transition: all 0.15s;
+}
+.category-btn.active, .category-btn:hover { background: #6366f1; color: white; border-color: #6366f1; }
+
+.services-section { padding: 2.5rem 1.5rem; }
+.services-section h2 { font-size: 1.4rem; color: #1e1b4b; margin: 0 0 1.5rem; }
+.count { color: #9ca3af; font-weight: 400; }
+
+.services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+
+.loading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+.skeleton { height: 300px; background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 12px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+.empty-state { text-align: center; padding: 4rem; color: #6b7280; }
+.empty-state p { font-size: 1.1rem; margin-bottom: 1rem; }
+
+.cta-section { background: linear-gradient(135deg, #1e1b4b, #312e81); padding: 4rem 1.5rem; text-align: center; color: white; }
+.cta-content h2 { font-size: 1.8rem; margin: 0 0 0.75rem; }
+.cta-content p  { opacity: 0.8; margin-bottom: 1.5rem; }
+.cta-content .btn-primary { display: inline-block; padding: 0.85rem 2rem; font-size: 1rem; border-radius: 10px; }

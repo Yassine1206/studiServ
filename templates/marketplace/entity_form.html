@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} {{ model_label }}{% endblock %}
+
+{% block content %}
+<section class="form-shell">
+    <div class="form-copy">
+        <span class="entity-avatar tone-{{ entity.tone }}">{{ entity.initial }}</span>
+        <span class="eyebrow">{{ entity.singular }}</span>
+        <h1>{{ action }}</h1>
+        <p>{{ entity.description }}</p>
+        <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_list' %}">
+            <span class="btn-mark">R</span>
+            Retour
+        </a>
+    </div>
+
+    <form class="record-form" method="post">
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+
+        <div class="form-grid">
+            {% for field in form.visible_fields %}
+                <div class="form-field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                        <span class="helptext">{{ field.help_text }}</span>
+                    {% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <button class="btn" type="submit">
+                <span class="btn-mark">OK</span>
+                Enregistrer
+            </button>
+            <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_list' %}">
+                <span class="btn-mark">A</span>
+                Annuler
+            </a>
+        </div>
+    </form>
+</section>
+{% endblock %}

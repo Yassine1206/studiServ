@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer {{ object }}{% endblock %}
+
+{% block content %}
+<section class="danger-shell">
+    <div class="danger-copy">
+        <span class="entity-avatar tone-{{ entity.tone }}">{{ entity.initial }}</span>
+        <span class="eyebrow">{{ entity.singular }}</span>
+        <h1>Supprimer</h1>
+        <p>Cette action retire l'enregistrement de la table {{ model_label }}.</p>
+        <div class="danger-object">
+            <strong>{{ object }}</strong>
+        </div>
+        <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_detail' object.pk %}">
+            <span class="btn-mark">R</span>
+            Retour
+        </a>
+    </div>
+
+    <form class="danger-form" method="post">
+        {% csrf_token %}
+        <span class="eyebrow">Confirmation</span>
+        <h2>Voulez-vous vraiment supprimer cet element ?</h2>
+        <p class="muted">La suppression est definitive dans la base de donnees locale.</p>
+        <div class="form-actions">
+            <button class="btn btn-danger" type="submit">
+                <span class="btn-mark">X</span>
+                Supprimer
+            </button>
+            <a class="btn btn-secondary" href="{% url 'marketplace:'|add:model_slug|add:'_detail' object.pk %}">
+                <span class="btn-mark">A</span>
+                Annuler
+            </a>
+        </div>
+    </form>
+</section>
+{% endblock %}

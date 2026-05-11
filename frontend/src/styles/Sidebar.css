@@ -1,0 +1,32 @@
+/* ── Sidebar.css ────────────────────────────────────────────── */
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: #1e1b4b; color: white;
+  display: flex; flex-direction: column;
+  min-height: 100vh;
+}
+.sidebar-header { padding: 1.5rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo { display: flex; align-items: center; gap: 0.5rem; font-weight: 800; font-size: 1.1rem; }
+.sidebar-logo .logo-icon { font-size: 1.4rem; }
+
+.sidebar-nav { flex: 1; padding: 1rem 0.75rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 0.85rem; border: none; background: none;
+  color: rgba(255,255,255,0.75); border-radius: 8px;
+  cursor: pointer; font-size: 0.9rem; width: 100%;
+  text-align: left; transition: background 0.15s, color 0.15s;
+}
+.nav-item:hover { background: rgba(255,255,255,0.1); color: white; }
+.nav-item.active { background: rgba(99,102,241,0.4); color: white; }
+.nav-icon { font-size: 1rem; width: 1.25rem; text-align: center; }
+
+.sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); }
+.btn-logout {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 0.85rem; border: none; background: none;
+  color: rgba(255,255,255,0.6); border-radius: 8px;
+  cursor: pointer; font-size: 0.9rem; width: 100%;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-logout:hover { background: rgba(239,68,68,0.2); color: #fca5a5; }

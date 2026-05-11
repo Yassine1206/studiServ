@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}{{ dashboard.title }} - StudiServ{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div>
+        <span class="eyebrow">StudiServ</span>
+        <h1>{{ dashboard.title }}</h1>
+        <p>{{ dashboard.subtitle }}</p>
+        <div class="hero-actions">
+            <a class="btn" href="{% url dashboard.primary_url %}">
+                <span class="btn-mark">+</span>
+                {{ dashboard.primary_action }}
+            </a>
+            <a class="btn btn-secondary" href="{% url 'marketplace:index' %}">
+                <span class="btn-mark">A</span>
+                Accueil
+            </a>
+        </div>
+    </div>
+    <div class="hero-panel">
+        <div class="hero-stat">
+            <span class="muted">Utilisateur connecte</span>
+            <strong>{{ request.user.username }}</strong>
+        </div>
+        <div class="hero-stat">
+            <span class="muted">Statut</span>
+            <strong>Actif</strong>
+        </div>
+    </div>
+</section>
+
+<section class="entity-grid">
+    {% for card in dashboard.cards %}
+        <a class="entity-card tone-{{ card.tone }}" href="{% url 'marketplace:'|add:card.slug|add:'_list' %}">
+            <div class="card-top">
+                <span class="card-icon tone-{{ card.tone }}">{{ card.initial }}</span>
+                <span class="card-count">{{ card.count }} element(s)</span>
+            </div>
+            <div>
+                <h2>{{ card.label }}</h2>
+                <p>{{ card.description }}</p>
+            </div>
+            <span class="card-link">Ouvrir</span>
+        </a>
+    {% endfor %}
+</section>
+{% endblock %}
