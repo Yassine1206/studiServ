@@ -4,6 +4,7 @@ import { providersAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
 import DashboardStats from '../../components/DashboardStats';
 import '../../styles/Dashboard.css';
+import Messaging from '../../components/Messaging';
 
 function ProviderDashboard() {
   const { user } = useAuth();

@@ -9,4 +9,8 @@ urlpatterns = [
     path("api/", include("marketplace.api_urls")),
     # Vues Django classiques (templates HTML)
     path("", include("marketplace.urls")),
+    path('api/messaging/',       include('messaging.urls')),
+    path('api/administration/',  include('administration.urls')),
+    path('api/chatbot/',         include('chatbot.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

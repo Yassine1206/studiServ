@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import timedelta
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,9 +19,15 @@ INSTALLED_APPS = [
     # Tiers
     "rest_framework",
     "rest_framework_simplejwt",
-    "corsheaders",
+    
+
     # Local
     "marketplace",
+    'channels',
+    'corsheaders',
+    'messaging',
+    'administration',
+    'chatbot'
 ]
 
 MIDDLEWARE = [
@@ -65,6 +72,27 @@ DATABASES = {
             "charset": "utf8mb4",
         },
     }
+}
+# WebSocket
+ASGI_APPLICATION = 'StudiServ.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {'hosts': [('127.0.0.1', 6379)]},
+    },
+}
+# Chatbot RAG
+CHATBOT_SETTINGS = {
+    'OPENAI_API_KEY': os.environ.get('OPENAI_API_KEY', ''),
+    'LLM_PROVIDER': 'ollama',
+    'OPENAI_MODEL': 'gpt-3.5-turbo',
+    'OLLAMA_BASE_URL': 'http://localhost:11434',
+    'OLLAMA_MODEL': 'mistral',
+    'CHROMA_PERSIST_DIR': str(BASE_DIR / 'chroma_db'),
+    'EMBEDDING_MODEL': 'paraphrase-multilingual-MiniLM-L12-v2',
+    'TOP_K_RESULTS': 4,
+    'MAX_TOKENS_RESPONSE': 512,
 }
 
 AUTH_PASSWORD_VALIDATORS = [

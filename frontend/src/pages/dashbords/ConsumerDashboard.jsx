@@ -6,6 +6,7 @@ import Sidebar from '../../components/Sidebar';
 import DashboardStats from '../../components/DashboardStats';
 import ServiceCard from '../../components/ServiceCard';
 import '../../styles/Dashboard.css';
+import Messaging from '../../components/Messaging';
 
 function ConsumerDashboard() {
   const navigate = useNavigate();
@@ -166,10 +167,8 @@ function ConsumerDashboard() {
             )}
 
             {activeTab === 'messages' && (
-              <div className="loading-state">
-                <p>💬 La messagerie sera disponible prochainement.</p>
-              </div>
-            )}
+  <Messaging currentUserId={user?.id} />
+)}
           </>
         )}
       </div>

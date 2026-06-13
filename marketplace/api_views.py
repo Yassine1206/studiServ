@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from .recommendation_engine import get_recommendations_for_user, get_top_providers
 
 from .models import (
     Compte, Utilisateur, Consommateur, Prestataire,

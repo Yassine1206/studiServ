@@ -18,7 +18,7 @@ import AdminDashboard     from './pages/dashbords/AdminDashboard';
 import ConsumerProfile  from './pages/profiles/ConsumerProfile';
 import ProviderProfile  from './pages/profiles/ProviderProfile';
 import AdminProfile     from './pages/profiles/AdminProfile';
-
+import ChatbotWidget from './components/ChatbotWidget'
 // Page 404
 import NotFound from './pages/NotFound';
 
@@ -60,6 +60,7 @@ function PublicRoute({ children }) {
 // ── Routes de l'application ───────────────────────────────────────────────────
 function AppRoutes() {
   return (
+    <>
     <Routes>
       {/* Public */}
       <Route path="/" element={<Home />} />
@@ -101,6 +102,9 @@ function AppRoutes() {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    <ChatbotWidget />
+    </>
+    
   );
 }
 

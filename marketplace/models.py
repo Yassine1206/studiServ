@@ -243,3 +243,4 @@ class Recommendation(models.Model):
 
     def get_absolute_url(self):
         return reverse("marketplace:recommendation_detail", args=[self.pk])
+    
