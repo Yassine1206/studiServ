@@ -243,4 +243,110 @@ class Recommendation(models.Model):
 
     def get_absolute_url(self):
         return reverse("marketplace:recommendation_detail", args=[self.pk])
+    from django.db.models import Avg, Count
+
+
+class ReputationScore(models.Model):
+    """
+    Score de réputation dynamique d'un prestataire.
+    Recalculé automatiquement après chaque nouvelle évaluation.
+    Score = (note_moyenne * 0.7) + (taux_complétion * 0.3) * 5
+    """
+    prestataire = models.OneToOneField(
+        Prestataire,
+        on_delete=models.CASCADE,
+        related_name='reputation'
+    )
+    note_moyenne        = models.FloatField(default=0.0)
+    taux_completion     = models.FloatField(default=0.0)   # % commandes terminées
+    score_global        = models.FloatField(default=0.0)   # score final sur 5
+    nb_avis             = models.PositiveIntegerField(default=0)
+    nb_commandes_total  = models.PositiveIntegerField(default=0)
+    badge_confiance     = models.BooleanField(default=False)
+    updated_at          = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-score_global']
+
+    def __str__(self):
+        return f"Réputation {self.prestataire} — {self.score_global:.1f}/5"
+
+    @classmethod
+    def update_score(cls, prestataire):
+        """
+        Recalcule et sauvegarde le score de réputation d'un prestataire.
+        Appelé automatiquement après chaque évaluation.
+        """
+        # Récupérer tous les avis du prestataire
+        avis = Recommendation.objects.filter(service__prestataire=prestataire)
+        nb_avis = avis.count()
+
+        if nb_avis == 0:
+            note_moyenne = 0.0
+        else:
+            note_moyenne = round(
+                avis.aggregate(avg=Avg('score'))['avg'] or 0.0, 2
+            )
+
+        # Calculer le taux de complétion des demandes/commandes
+        total_demandes = Demande.objects.filter(
+            service__prestataire=prestataire
+        ).count()
+        demandes_terminees = Demande.objects.filter(
+            service__prestataire=prestataire,
+            statut='completed'
+        ).count()
+
+        if total_demandes > 0:
+            taux_completion = round(demandes_terminees / total_demandes, 2)
+        else:
+            taux_completion = 0.0
+
+        # Formule : 70% note moyenne + 30% taux complétion
+        score_global = round(
+            (note_moyenne * 0.7) + (taux_completion * 5 * 0.3), 2
+        )
+
+        # Badge de confiance : note >= 4.5 ET au moins 10 avis
+        badge_confiance = (note_moyenne >= 4.5 and nb_avis >= 10)
+
+        # Créer ou mettre à jour
+        rep, _ = cls.objects.update_or_create(
+            prestataire=prestataire,
+            defaults={
+                'note_moyenne':       note_moyenne,
+                'taux_completion':    taux_completion,
+                'score_global':       score_global,
+                'nb_avis':            nb_avis,
+                'nb_commandes_total': total_demandes,
+                'badge_confiance':    badge_confiance,
+            }
+        )
+
+        # Mettre à jour aussi le Profil (note_moyenne et score_reputation)
+        try:
+            profil = prestataire.utilisateur.profil
+            profil.note_moyenne     = note_moyenne
+            profil.score_reputation = score_global
+            profil.nb_commandes_total = total_demandes
+            profil.save(update_fields=[
+                'note_moyenne', 'score_reputation', 'nb_commandes_total'
+            ])
+        except Exception:
+            pass
+
+        # Alerte si chute brutale (score < 2.0 et avait un bon score avant)
+        if score_global < 2.0 and nb_avis >= 3:
+            rep._trigger_alert()
+
+        return rep
+
+    def _trigger_alert(self):
+        """Alerte interne en cas de chute brutale de réputation."""
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            f"ALERTE RÉPUTATION : {self.prestataire} — score {self.score_global}/5"
+        )
+
     

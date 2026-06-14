@@ -118,3 +118,13 @@ export const adminAPI = {
     apiClient.post(`/admin/verify-card/${userId}/`, { approved }),
   getStatistics: () => apiClient.get('/admin/statistics/'),
 };
+export const reviewsAPI = {
+  leaveReview: (serviceId, score, commentaire) =>
+    apiClient.post(`/services/${serviceId}/review/`, { score, commentaire }),
+  getServiceReviews: (serviceId) =>
+    apiClient.get(`/services/${serviceId}/reviews/`),
+  getSmartRecommendations: () =>
+    apiClient.get('/recommendations/smart/'),
+  getTopProviders: () =>
+    apiClient.get('/providers/top/'),
+};

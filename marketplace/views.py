@@ -10,7 +10,11 @@ from django.urls import reverse_lazy
 
 from .forms import EmailAuthForm, InscriptionCompteForm
 from .models import Compte, Consommateur, EtatCompte, Prestataire, Profil, RoleUser, Utilisateur
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.db.models import Avg, Count, Q
+from .models import Service, Recommendation, Prestataire, Consommateur, ReputationScore
 
 MODEL_NAMES = [
     "Compte",
@@ -577,3 +581,257 @@ def entity_delete(request, model_slug, pk):
             "nav_items": get_nav_items(),
         },
     )
+from .recommendation_engine import (
+    get_recommendations_for_user,
+    get_top_providers,
+    get_similar_services,
+    update_user_preferred_category,
+)
+
+
+# ─── ÉVALUATIONS ──────────────────────────────────────────────────────────────
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_leave_review(request, service_id):
+    """
+    POST /api/services/<service_id>/review/
+    Laisser une évaluation après une commande terminée.
+
+    Body: {
+        "score": 4,
+        "commentaire": "Excellent travail, très réactif !"
+    }
+    """
+    score = request.data.get('score')
+    commentaire = request.data.get('commentaire', '')
+
+    # Validation du score
+    if not score:
+        return Response({'error': 'Le score est obligatoire.'}, status=400)
+    try:
+        score = int(score)
+        if not (1 <= score <= 5):
+            raise ValueError()
+    except (ValueError, TypeError):
+        return Response({'error': 'Le score doit être entre 1 et 5.'}, status=400)
+
+    # Récupérer le service
+    try:
+        service = Service.objects.get(pk=service_id, actif=True)
+    except Service.DoesNotExist:
+        return Response({'error': 'Service introuvable.'}, status=404)
+
+    # Récupérer le consommateur
+    try:
+        consommateur = request.user.compte.utilisateur.consommateur
+    except Exception:
+        return Response({'error': 'Profil consommateur introuvable.'}, status=400)
+
+    # Vérifier qu'il n'a pas déjà évalué ce service
+    if Recommendation.objects.filter(
+        consommateur=consommateur,
+        service=service
+    ).exists():
+        return Response(
+            {'error': 'Tu as déjà laissé un avis pour ce service.'},
+            status=400
+        )
+
+    # Créer l'évaluation
+    review = Recommendation.objects.create(
+        consommateur=consommateur,
+        service=service,
+        score=score,
+        commentaire=commentaire,
+    )
+
+    # Mettre à jour la catégorie préférée du consommateur
+    update_user_preferred_category(request.user)
+
+    # Le signal post_save va automatiquement recalculer le score de réputation
+
+    return Response({
+        'message': 'Évaluation enregistrée avec succès.',
+        'review': {
+            'id': review.id,
+            'score': review.score,
+            'commentaire': review.commentaire,
+            'service': service.titre,
+            'date': review.date_creation.isoformat(),
+        }
+    }, status=201)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_service_reviews(request, service_id):
+    """
+    GET /api/services/<service_id>/reviews/
+    Récupère tous les avis d'un service avec la note moyenne.
+    """
+    try:
+        service = Service.objects.get(pk=service_id)
+    except Service.DoesNotExist:
+        return Response({'error': 'Service introuvable.'}, status=404)
+
+    reviews = Recommendation.objects.filter(
+        service=service
+    ).select_related(
+        'consommateur__utilisateur'
+    ).order_by('-date_creation')
+
+    avg = reviews.aggregate(avg=Avg('score'))['avg'] or 0
+    data = [
+        {
+            'id': r.id,
+            'score': r.score,
+            'commentaire': r.commentaire,
+            'consommateur': str(r.consommateur.utilisateur),
+            'date': r.date_creation.isoformat(),
+        }
+        for r in reviews
+    ]
+
+    return Response({
+        'service_id': service_id,
+        'titre': service.titre,
+        'note_moyenne': round(avg, 1),
+        'nb_avis': reviews.count(),
+        'avis': data,
+    })
+
+
+# ─── RECOMMANDATIONS INTELLIGENTES ────────────────────────────────────────────
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_smart_recommendations(request):
+    """
+    GET /api/recommendations/smart/
+    Recommandations personnalisées basées sur l'historique et les notes.
+    """
+    services = get_recommendations_for_user(request.user, limit=6)
+
+    data = []
+    for s in services:
+        try:
+            rep = s.prestataire.reputation
+            avg_score = rep.note_moyenne
+            badge = rep.badge_confiance
+        except Exception:
+            avg_score = getattr(s, 'avg_score', 0) or 0
+            badge = False
+
+        data.append({
+            'id': s.id,
+            'titre': s.titre,
+            'description': s.description[:100] + '...' if len(s.description) > 100 else s.description,
+            'categorie': s.categorie,
+            'prix': str(s.prix),
+            'delai_livraison': s.delai_livraison,
+            'note_moyenne': round(avg_score, 1),
+            'nb_avis': getattr(s, 'nb_avis', 0) or 0,
+            'badge_confiance': badge,
+            'prestataire': {
+                'id': s.prestataire.id,
+                'nom': str(s.prestataire.utilisateur),
+            },
+        })
+
+    return Response({
+        'count': len(data),
+        'recommendations': data,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_top_providers(request):
+    """
+    GET /api/providers/top/
+    Top prestataires classés par score de réputation.
+    """
+    top = get_top_providers(limit=5)
+    data = []
+    for rep in top:
+        p = rep.prestataire
+        try:
+            profil = p.utilisateur.profil
+            photo = profil.photo.url if profil.photo else None
+        except Exception:
+            photo = None
+
+        data.append({
+            'prestataire_id': p.id,
+            'nom': str(p.utilisateur),
+            'photo': photo,
+            'note_moyenne': rep.note_moyenne,
+            'score_global': rep.score_global,
+            'nb_avis': rep.nb_avis,
+            'badge_confiance': rep.badge_confiance,
+            'nb_services': p.services.filter(actif=True).count(),
+        })
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_similar_services(request, service_id):
+    """
+    GET /api/services/<service_id>/similar/
+    Services similaires à afficher sur la page d'un service.
+    """
+    try:
+        service = Service.objects.get(pk=service_id)
+    except Service.DoesNotExist:
+        return Response({'error': 'Service introuvable.'}, status=404)
+
+    similar = get_similar_services(service, limit=4)
+    data = [
+        {
+            'id': s.id,
+            'titre': s.titre,
+            'prix': str(s.prix),
+            'note_moyenne': round(getattr(s, 'avg_score', 0) or 0, 1),
+            'nb_avis': getattr(s, 'nb_avis', 0) or 0,
+            'prestataire': str(s.prestataire.utilisateur),
+        }
+        for s in similar
+    ]
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_provider_reputation(request, provider_id):
+    """
+    GET /api/providers/<provider_id>/reputation/
+    Score de réputation détaillé d'un prestataire.
+    """
+    try:
+        prestataire = Prestataire.objects.get(pk=provider_id)
+        rep = prestataire.reputation
+        return Response({
+            'prestataire_id': provider_id,
+            'nom': str(prestataire.utilisateur),
+            'note_moyenne': rep.note_moyenne,
+            'taux_completion': rep.taux_completion,
+            'score_global': rep.score_global,
+            'nb_avis': rep.nb_avis,
+            'nb_commandes': rep.nb_commandes_total,
+            'badge_confiance': rep.badge_confiance,
+        })
+    except Prestataire.DoesNotExist:
+        return Response({'error': 'Prestataire introuvable.'}, status=404)
+    except Exception:
+        return Response({
+            'prestataire_id': provider_id,
+            'note_moyenne': 0,
+            'score_global': 0,
+            'nb_avis': 0,
+            'badge_confiance': False,
+            'message': 'Aucune donnée de réputation disponible.'
+        })
+

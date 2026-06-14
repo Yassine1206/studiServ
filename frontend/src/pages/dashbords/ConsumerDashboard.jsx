@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { consumersAPI } from '../../api/axios';
+import { consumersAPI, reviewsAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
 import DashboardStats from '../../components/DashboardStats';
 import ServiceCard from '../../components/ServiceCard';
 import '../../styles/Dashboard.css';
 import Messaging from '../../components/Messaging';
+import ReviewModal from '../../components/ReviewModal';
 
 function ConsumerDashboard() {
   const navigate = useNavigate();
@@ -15,17 +16,17 @@ function ConsumerDashboard() {
   const [orders, setOrders]                 = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading]               = useState(true);
-
+  const [reviewOrder, setReviewOrder]       = useState(null);       
   useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
     try {
-      const [ordersRes, recsRes] = await Promise.all([
-        consumersAPI.getOrders(),
-        consumersAPI.getRecommendations(),
-      ]);
-      setOrders(ordersRes.data);
-      setRecommendations(recsRes.data);
+     const [ordersRes, recsRes] = await Promise.all([
+  consumersAPI.getOrders(),
+  reviewsAPI.getSmartRecommendations(),
+]);
+setOrders(ordersRes.data);
+setRecommendations(recsRes.data.recommendations);
     } catch {
       setOrders(getMockOrders());
       setRecommendations(getMockRecommendations());
@@ -147,13 +148,25 @@ function ConsumerDashboard() {
                         <td>{o.date_creation?.slice(0, 10)}</td>
                         <td>
                           {o.statut === 'completed' && (
-                            <button className="btn-action approve">⭐ Noter</button>
-                          )}
+  <button className="btn-sm" onClick={() => setReviewOrder(o)}>
+    ⭐ Laisser un avis
+  </button>
+)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {reviewOrder && (
+  <ReviewModal
+    order={reviewOrder}
+    onClose={() => setReviewOrder(null)}
+    onSuccess={() => {
+      alert('Merci pour ton avis !');
+      fetchDashboardData(); // recharge les données
+    }}
+  />
+)}
               </div>
             )}
 

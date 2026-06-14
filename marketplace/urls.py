@@ -25,6 +25,15 @@ urlpatterns = [
     path("prestataire",  views.prestatire_dashboard, name="prestataire_dashboard_slash"),
     path("prestatire/",  views.prestatire_dashboard, name="prestatire_dashboard"),
     path("prestatire",   views.prestatire_dashboard, name="prestatire_dashboard_slash"),
+    # ── Évaluations ─────────────────────────────────────────────────
+    path("services/<int:service_id>/review/",   views.api_leave_review,        name="api_leave_review"),
+    path("services/<int:service_id>/reviews/",  views.api_service_reviews,     name="api_service_reviews"),
+    path("services/<int:service_id>/similar/",  views.api_similar_services,    name="api_similar_services"),
+
+    # ── Recommandations intelligentes ───────────────────────────────
+    path("recommendations/smart/",              views.api_smart_recommendations, name="api_smart_recommendations"),
+    path("providers/top/",                      views.api_top_providers,         name="api_top_providers"),
+    path("providers/<int:provider_id>/reputation/", views.api_provider_reputation, name="api_provider_reputation"),
 ]
 
 # ── CRUD générique pour toutes les entités ───────────────────────────
