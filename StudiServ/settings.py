@@ -27,7 +27,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'messaging',
     'administration',
-    'chatbot'
+    'chatbot',
+    'addons',
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ CHANNEL_LAYERS = {
 # Chatbot RAG
 CHATBOT_SETTINGS = {
     'OPENAI_API_KEY': os.environ.get('OPENAI_API_KEY', ''),
-    'LLM_PROVIDER': 'ollama',
+    'LLM_PROVIDER': os.environ.get('LLM_PROVIDER', 'ollama'),
     'OPENAI_MODEL': 'gpt-3.5-turbo',
     'OLLAMA_BASE_URL': 'http://localhost:11434',
     'OLLAMA_MODEL': 'mistral',

@@ -36,6 +36,14 @@ class SignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError("Cet email est déjà utilisé.")
         return value.lower()
 
+    def validate_student_card(self, value):
+        from addons.card_verification import verify_student_card
+        result = verify_student_card(value)
+        if not result["ok"]:
+            raise serializers.ValidationError(result["reason"])
+        self._card_confidence = result.get("confidence", "manual")
+        return value
+
     def validate(self, data):
         if data["role"] == "provider":
             if not data.get("university"):
@@ -90,7 +98,25 @@ class SignUpSerializer(serializers.Serializer):
             prestataire = Prestataire.objects.create(utilisateur=utilisateur)
             if student_card:
                 prestataire.carte_etudiant = student_card
+                if getattr(self, "_card_confidence", "manual") == "high":
+                    prestataire.carte_verifiee = True
                 prestataire.save()
+
+                try:
+                    from administration.models import StudentCardVerification
+                    try:
+                        student_card.seek(0)
+                    except Exception:
+                        pass
+                    StudentCardVerification.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            "card_image": student_card,
+                            "status": "approved" if prestataire.carte_verifiee else "pending",
+                        },
+                    )
+                except Exception:
+                    pass
 
         return user
 

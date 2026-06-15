@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # API REST (JWT)
     path("api/", include("marketplace.api_urls")),
+    path("api/", include("addons.urls")),
     # Vues Django classiques (templates HTML)
     path("", include("marketplace.urls")),
     path('api/messaging/',       include('messaging.urls')),

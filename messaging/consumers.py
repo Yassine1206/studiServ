@@ -10,6 +10,22 @@ from .models import Conversation, Message, Notification
 User = get_user_model()
 
 
+def _anon_handle(user):
+    try:
+        role = (user.compte.utilisateur.role or "").upper()
+    except Exception:
+        role = ""
+    if "PRESTA" in role:
+        label = "Prestataire"
+    elif "CONSO" in role:
+        label = "Étudiant"
+    elif "ADMIN" in role:
+        label = "Admin"
+    else:
+        label = "Utilisateur"
+    return f"{label} #{user.pk}"
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer pour le chat temps réel.
@@ -79,7 +95,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'typing_indicator',
                     'user_id': self.user.id,
-                    'username': self.user.get_full_name() or self.user.email,
+                    'username': _anon_handle(self.user),
                     'is_typing': data.get('is_typing', True)
                 }
             )
@@ -171,7 +187,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 'id': m.id,
                 'sender_id': m.sender.id,
-                'sender_name': m.sender.get_full_name() or m.sender.email,
+                'sender_handle': _anon_handle(m.sender),
                 'content': m.content,
                 'message_type': m.message_type,
                 'file_url': m.file_url,
@@ -187,7 +203,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         msg_data = {
             'id': message.id,
             'sender_id': self.user.id,
-            'sender_name': self.user.get_full_name() or self.user.email,
+            'sender_handle': _anon_handle(self.user),
             'content': message.content,
             'message_type': message.message_type,
             'file_url': message.file_url,

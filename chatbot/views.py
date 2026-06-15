@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .models import FAQDocument, ChatSession, ChatMessage
-from .rag_engine import get_chatbot_response, index_faq_documents
+from .rag_engine import index_faq_documents
+from addons.chatbot_engine import get_chatbot_response
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -65,7 +66,8 @@ class ChatView(APIView):
         result = get_chatbot_response(
             question=message,
             conversation_history=history,
-            session_key=session_key
+            session_key=session_key,
+            user=request.user,
         )
 
         # Sauvegarder la question et la réponse
