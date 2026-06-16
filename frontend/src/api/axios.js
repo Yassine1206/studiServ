@@ -9,7 +9,7 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Ajouter le token JWT à chaque requête ─────────────────────────────────────
+// ── Ajouter le token JWT à chaque requête ────────────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -19,7 +19,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ── Gérer les erreurs 401 (token expiré) ──────────────────────────────────────
+// ── Gérer les erreurs 401 (token expiré) ────────────────────────────────────
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -102,6 +102,7 @@ export const providersAPI = {
   getOrders: () => apiClient.get('/provider/orders/'),
   getStatistics: () => apiClient.get('/provider/statistics/'),
   getReviews: () => apiClient.get('/provider/reviews/'),
+  updateOrderStatus: (orderId, statut) => apiClient.post(`/provider/orders/${orderId}/status/`, { statut }),
 };
 
 // ==================== CONSOMMATEURS ====================
