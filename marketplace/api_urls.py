@@ -28,6 +28,7 @@ urlpatterns = [
     # ── Prestataire ─────────────────────────────────────────────────
     path("provider/services/",   api_views.api_provider_services,   name="api_provider_services"),
     path("provider/orders/",     api_views.api_provider_orders,     name="api_provider_orders"),
+    path("provider/orders/<int:demande_id>/status/", api_views.api_provider_update_order, name="api_provider_update_order"),
     path("provider/statistics/", api_views.api_provider_statistics, name="api_provider_stats"),
     path("provider/reviews/",    api_views.api_provider_reviews,    name="api_provider_reviews"),
 

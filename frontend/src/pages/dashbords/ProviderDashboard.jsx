@@ -56,6 +56,15 @@ function ProviderDashboard() {
   ];
   const getMockStats = () => ({ totalEarnings: 450, totalOrders: 20, completionRate: 95, reputation: 4.8, totalReviews: 24, totalServices: 2 });
 
+  const handleOrderAction = async (orderId, statut) => {
+    try {
+      await providersAPI.updateOrderStatus(orderId, statut);
+      fetchData();
+    } catch (e) {
+      alert(e?.response?.data?.message || "Erreur lors de la mise à jour.");
+    }
+  };
+
   const handleCreateService = async (e) => {
     e.preventDefault();
     setCreateError('');
@@ -153,14 +162,26 @@ function ProviderDashboard() {
 
             {activeTab === 'orders' && (
               <table className="data-table">
-                <thead><tr><th>Service</th><th>Consommateur</th><th>Statut</th><th>Date</th></tr></thead>
+                <thead><tr><th>Service</th><th>Consommateur</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead>
                 <tbody>
                   {orders.map(o => (
                     <tr key={o.id}>
                       <td>{o.service_titre}</td>
-                      <td>{o.provider_name}</td>
+                      <td>{o.consumer_name || o.provider_name}</td>
                       <td><span className={`status-badge ${o.statut}`}>{statusLabel[o.statut] || o.statut}</span></td>
                       <td>{o.date_creation?.slice(0, 10)}</td>
+                      <td>
+                        {o.statut === 'pending' && (
+                          <>
+                            <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'in_progress')}>Accepter</button>
+                            <button className="btn-action reject"  onClick={() => handleOrderAction(o.id, 'cancelled')}>Refuser</button>
+                          </>
+                        )}
+                        {o.statut === 'in_progress' && (
+                          <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'completed')}>Marquer livrée</button>
+                        )}
+                        {(o.statut === 'completed' || o.statut === 'cancelled') && <span style={{color:'#94a3b8'}}>—</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

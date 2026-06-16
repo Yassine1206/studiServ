@@ -159,7 +159,7 @@ def api_token_refresh_custom(request):
     return Response({"detail": "Utilisez /api/auth/token/refresh/"})
 
 
-# ─── PROFIL UTILISATEUR ───────────────────────────────────────────────────────
+# ─── PROFIL UTILISATEUR ────────────────────────────────────────────────────────
 
 @api_view(["GET", "PUT"])
 @permission_classes([IsAuthenticated])
@@ -318,6 +318,41 @@ def api_provider_orders(request):
     ).select_related("service", "consommateur__utilisateur").order_by("-date_creation")
     serializer = DemandeSerializer(demandes, many=True)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_provider_update_order(request, demande_id):
+    """POST /api/provider/orders/<demande_id>/status/
+    Body: { "statut": "in_progress" | "completed" | "cancelled" }
+    Transitions autorisees : pending -> in_progress -> completed ; * -> cancelled."""
+    try:
+        prestataire = request.user.compte.utilisateur.prestataire
+    except Exception:
+        return Response({"message": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        demande = Demande.objects.select_related("service").get(pk=demande_id)
+    except Demande.DoesNotExist:
+        return Response({"message": "Commande introuvable."}, status=404)
+
+    if not demande.service or demande.service.prestataire_id != prestataire.id:
+        return Response({"message": "Cette commande n'est pas la vôtre."}, status=403)
+
+    new_status = request.data.get("statut")
+    allowed = {
+        "pending":     ["in_progress", "cancelled"],
+        "in_progress": ["completed",   "cancelled"],
+    }
+    if new_status not in allowed.get(demande.statut, []):
+        return Response(
+            {"message": f"Transition '{demande.statut}' -> '{new_status}' non autorisée."},
+            status=400,
+        )
+
+    demande.statut = new_status
+    demande.save(update_fields=["statut"])
+    return Response(DemandeSerializer(demande).data)
 
 
 @api_view(["GET"])
