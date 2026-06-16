@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { consumersAPI, reviewsAPI } from '../../api/axios';
+import apiClient, { consumersAPI, reviewsAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
 import DashboardStats from '../../components/DashboardStats';
 import ServiceCard from '../../components/ServiceCard';
@@ -44,6 +44,20 @@ function ConsumerDashboard() {
     }
   };
 
+  const handleContactProvider = async (order) => {
+    const recipientId = order.provider_user_id;
+    if (!recipientId) {
+      alert("Identifiant du prestataire indisponible.");
+      return;
+    }
+    try {
+      await apiClient.post('/messaging/conversations/create/', { recipient_id: recipientId });
+    } catch (e) {
+      // Conversation existe peut-être déjà — pas grave, on passe à l'onglet
+    }
+    setActiveTab('messages');
+  };
+
   const getMockOrders = () => [
     { id: 1, titre: 'Cours de Mathématiques', provider_name: 'Ahmed Ben Ali', statut: 'completed', date_creation: '2024-05-08', service_titre: 'Cours de Maths' },
     { id: 2, titre: 'Design Graphique',        provider_name: 'Leila Hamzi',   statut: 'in_progress', date_creation: '2024-05-07', service_titre: 'Design Logo' },
@@ -72,7 +86,6 @@ function ConsumerDashboard() {
           </button>
         </div>
 
-        {/* Onglets */}
         <div className="tab-nav">
           {[
             { key: 'overview',         label: 'Aperçu' },
@@ -171,6 +184,13 @@ function ConsumerDashboard() {
                               ⭐ Laisser un avis
                             </button>
                           )}
+                          <button
+                            className="btn-sm"
+                            style={{ background:'#0ea5e9', color:'#fff', border:'none', padding:'0.4rem 0.8rem', borderRadius:'6px', cursor:'pointer', marginLeft:'0.4rem' }}
+                            onClick={() => handleContactProvider(o)}
+                          >
+                            💬 Contacter
+                          </button>
                         </td>
                       </tr>
                     ))}
