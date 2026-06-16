@@ -159,7 +159,7 @@ def api_token_refresh_custom(request):
     return Response({"detail": "Utilisez /api/auth/token/refresh/"})
 
 
-# ─── PROFIL UTILISATEUR ────────────────────────────────────────────────────────
+# ─── PROFIL UTILISATEUR ─────────────────────────────────────────────────────────
 
 @api_view(["GET", "PUT"])
 @permission_classes([IsAuthenticated])
@@ -294,7 +294,15 @@ def api_provider_services(request):
         serializer = ServiceSerializer(services, many=True)
         return Response(serializer.data)
 
-    # POST
+    # POST — bloquer la publication tant que l'admin n'a pas validé la carte étudiante
+    if not prestataire.carte_verifiee:
+        return Response(
+            {"message": "Ton compte n'est pas encore vérifié. "
+                        "Un administrateur doit valider ta carte étudiante "
+                        "avant que tu puisses publier un service."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     serializer = ServiceCreateSerializer(
         data=request.data, context={"request": request}
     )
