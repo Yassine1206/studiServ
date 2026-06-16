@@ -5,16 +5,14 @@
 # Stratégie en cascade (chaque étape est optionnelle et dégradée proprement) :
 #   1. Type de fichier et taille plausibles.
 #   2. Dimensions / ratio d'aspect cohérents avec une carte (si Pillow dispo).
-#   3. OCR du texte (si pytesseract + tesseract dispo) → recherche de mots-clés
-#      ("étudiant", "université", "carte", "student", "matricule", ...) et/ou
-#      d'un numéro de matricule.
-#
-# Si NI Pillow NI pytesseract ne sont installés, on retombe sur une validation
-# de base (type + taille) afin de ne jamais bloquer l'inscription par erreur
-# technique — la vérification fine reste alors à l'admin.
+#   3. Pour les PDF : extraction du texte via pypdf.
+#      Pour les images : OCR du texte (si pytesseract + tesseract dispo).
+#      Puis recherche de signaux forts : le mot « carte », un terme "étudiant",
+#      ET un numéro de matricule (≥5 chiffres). Ces 3 doivent être présents
+#      pour reconnaître automatiquement la carte.
 #
 # Dépendances optionnelles :
-#   pip install pillow pytesseract
+#   pip install pillow pytesseract pypdf
 #   + le binaire système tesseract-ocr  (apt-get install tesseract-ocr tesseract-ocr-fra)
 
 import logging
@@ -50,8 +48,45 @@ def _has_matricule(text: str) -> bool:
     return bool(re.search(r"\d{5,}", text or ""))
 
 
+def _pdf_text(uploaded_file):
+    """Extrait le texte d'un PDF via pypdf. Retourne None si pypdf indisponible
+    ou si le PDF est illisible / vide."""
+    try:
+        from pypdf import PdfReader
+    except ImportError:
+        try:
+            from PyPDF2 import PdfReader  # repli legacy
+        except ImportError:
+            logger.info("Extraction PDF indisponible (pypdf non installé).")
+            return None
+
+    try:
+        uploaded_file.seek(0)
+        reader = PdfReader(uploaded_file)
+        parts = []
+        for page in reader.pages[:3]:  # 3 premières pages suffisent
+            try:
+                parts.append(page.extract_text() or "")
+            except Exception:
+                continue
+        return "\n".join(parts)
+    except Exception as e:
+        logger.warning("Échec extraction texte PDF: %s", e)
+        return None
+    finally:
+        try:
+            uploaded_file.seek(0)
+        except Exception:
+            pass
+
+
 def _ocr_text(uploaded_file):
-    """Retourne le texte OCR ou None si l'OCR n'est pas disponible."""
+    """Retourne le texte OCR ou None si l'OCR n'est pas disponible.
+    Pour les PDF, utilise pypdf au lieu de l'OCR image."""
+    # Cas PDF : extraction directe du texte
+    if getattr(uploaded_file, "content_type", "") == "application/pdf":
+        return _pdf_text(uploaded_file)
+
     try:
         from PIL import Image
         import pytesseract
@@ -61,9 +96,6 @@ def _ocr_text(uploaded_file):
 
     try:
         uploaded_file.seek(0)
-        # Les PDF ne sont pas gérés par Pillow directement → on saute l'OCR.
-        if getattr(uploaded_file, "content_type", "") == "application/pdf":
-            return None
         img = Image.open(uploaded_file)
         text = pytesseract.image_to_string(img, lang="fra+eng")
         return text
@@ -121,25 +153,42 @@ def verify_student_card(uploaded_file) -> dict:
 
     details = {"content_type": content_type, "size": size}
 
-    # 2) OCR (si disponible)
+    # 2) Extraction de texte (OCR image ou pypdf pour les PDF)
     text = _ocr_text(uploaded_file)
     if text is not None:
-        hits = _keyword_hits(text)
+        text_lower = _normalize(text)
         matricule = _has_matricule(text)
-        details.update({"keyword_hits": hits, "has_matricule": matricule,
-                        "ocr_chars": len(text.strip())})
 
-        # Une carte étudiante contient typiquement plusieurs de ces mots
-        # et/ou un matricule.
-        if hits >= 2 or (hits >= 1 and matricule):
+        # Signaux forts d'une vraie carte étudiante
+        has_card_word = bool(re.search(r"\b(carte|card)\b", text_lower))
+        has_student_word = bool(re.search(
+            r"\b(étudiant|etudiant|étudiante|etudiante|student|studiant)\b",
+            text_lower,
+        ))
+
+        details.update({"has_matricule": matricule,
+                        "ocr_chars": len(text.strip()),
+                        "has_card_word": has_card_word,
+                        "has_student_word": has_student_word})
+
+        # Carte reconnue : doit contenir "carte" + un terme étudiant + un matricule.
+        if has_card_word and has_student_word and matricule:
             return {"ok": True, "reason": "Carte étudiante reconnue automatiquement.",
                     "confidence": "high", "details": details}
 
-        # Image lisible mais sans aucun indice de carte étudiante → rejet.
-        if len(text.strip()) >= 15 and hits == 0 and not matricule:
+        # Texte extrait mais signaux insuffisants → rejet explicite.
+        if len(text.strip()) >= 15:
+            missing = []
+            if not has_card_word:
+                missing.append("le mot « carte »")
+            if not has_student_word:
+                missing.append("le mot « étudiant »")
+            if not matricule:
+                missing.append("un numéro de matricule")
             return {"ok": False,
-                    "reason": "Cette image ne ressemble pas à une carte étudiante. "
-                              "Téléverse une photo nette de ta carte (recto).",
+                    "reason": "Ce document ne ressemble pas à une carte étudiante "
+                              f"(manque : {', '.join(missing)}). "
+                              "Téléverse une photo nette du recto de ta carte.",
                     "confidence": "high", "details": details}
 
     # 3) Ratio d'aspect (indice secondaire)
