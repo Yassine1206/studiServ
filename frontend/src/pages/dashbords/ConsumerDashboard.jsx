@@ -8,6 +8,7 @@ import ServiceCard from '../../components/ServiceCard';
 import '../../styles/Dashboard.css';
 import Messaging from '../../components/Messaging';
 import ReviewModal from '../../components/ReviewModal';
+import PaymentModal from '../../components/PaymentModal';
 
 function ConsumerDashboard() {
   const navigate = useNavigate();
@@ -21,7 +22,8 @@ function ConsumerDashboard() {
   const [recommendations, setRecommendations] = useState([]);
   const [reviews, setReviews]               = useState([]);
   const [loading, setLoading]               = useState(true);
-  const [reviewOrder, setReviewOrder]       = useState(null);       
+  const [reviewOrder, setReviewOrder]       = useState(null);
+  const [paymentOrder, setPaymentOrder]     = useState(null);
   useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
@@ -155,26 +157,46 @@ function ConsumerDashboard() {
                         </td>
                         <td>{o.date_creation?.slice(0, 10)}</td>
                         <td>
+                          {o.statut === 'pending' && (
+                            <button
+                              className="btn-sm"
+                              style={{ background:'#6C63FF', color:'#fff', border:'none', padding:'0.4rem 0.8rem', borderRadius:'6px', cursor:'pointer' }}
+                              onClick={() => setPaymentOrder(o)}
+                            >
+                              💳 Payer
+                            </button>
+                          )}
                           {o.statut === 'completed' && (
-  <button className="btn-sm" onClick={() => setReviewOrder(o)}>
-    ⭐ Laisser un avis
-  </button>
-)}
+                            <button className="btn-sm" onClick={() => setReviewOrder(o)}>
+                              ⭐ Laisser un avis
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
                 {reviewOrder && (
-  <ReviewModal
-    order={reviewOrder}
-    onClose={() => setReviewOrder(null)}
-    onSuccess={() => {
-      alert('Merci pour ton avis !');
-      fetchDashboardData(); // recharge les données
-    }}
-  />
-)}
+                  <ReviewModal
+                    order={reviewOrder}
+                    onClose={() => setReviewOrder(null)}
+                    onSuccess={() => {
+                      alert('Merci pour ton avis !');
+                      fetchDashboardData();
+                    }}
+                  />
+                )}
+                {paymentOrder && (
+                  <PaymentModal
+                    order={{ ...paymentOrder, montant: paymentOrder.prix || paymentOrder.service?.prix }}
+                    onPaid={() => {
+                      alert('Paiement réussi !');
+                      setPaymentOrder(null);
+                      fetchDashboardData();
+                    }}
+                    onClose={() => setPaymentOrder(null)}
+                  />
+                )}
               </div>
             )}
 
