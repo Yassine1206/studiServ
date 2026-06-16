@@ -29,6 +29,7 @@ urlpatterns = [
     path("provider/services/",   api_views.api_provider_services,   name="api_provider_services"),
     path("provider/orders/",     api_views.api_provider_orders,     name="api_provider_orders"),
     path("provider/statistics/", api_views.api_provider_statistics, name="api_provider_stats"),
+    path("provider/reviews/",    api_views.api_provider_reviews,    name="api_provider_reviews"),
 
     # ── Administration ──────────────────────────────────────────────
     path("admin/users/",                       api_views.api_admin_users,         name="api_admin_users"),

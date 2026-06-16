@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminAPI, reviewsAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
@@ -8,7 +9,11 @@ import '../../styles/Dashboard.css';
 
 function AdminDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab]     = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab) => setSearchParams({ tab });
+
   const [users, setUsers]             = useState([]);
   const [stats, setStats]             = useState({});
   const [topProviders, setTopProviders] = useState([]);

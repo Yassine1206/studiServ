@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { providersAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
@@ -8,9 +9,14 @@ import Messaging from '../../components/Messaging';
 
 function ProviderDashboard() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab]       = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab) => setSearchParams({ tab });
+
   const [services, setServices]         = useState([]);
   const [orders, setOrders]             = useState([]);
+  const [reviews, setReviews]           = useState([]);
   const [statistics, setStatistics]     = useState({});
   const [loading, setLoading]           = useState(true);
   const [showCreate, setShowCreate]     = useState(false);
@@ -21,14 +27,16 @@ function ProviderDashboard() {
 
   const fetchData = async () => {
     try {
-      const [svcRes, ordRes, statRes] = await Promise.all([
+      const [svcRes, ordRes, statRes, reviewsRes] = await Promise.all([
         providersAPI.getServices(),
         providersAPI.getOrders(),
         providersAPI.getStatistics(),
+        providersAPI.getReviews().catch(() => ({ data: [] })),
       ]);
       setServices(svcRes.data);
       setOrders(ordRes.data);
       setStatistics(statRes.data);
+      setReviews(reviewsRes.data || []);
     } catch {
       setServices(getMockServices());
       setOrders(getMockOrders());
@@ -106,6 +114,8 @@ function ProviderDashboard() {
             { key: 'services',    label: `Mes services (${services.length})` },
             { key: 'orders',      label: `Commandes (${orders.length})` },
             { key: 'statistics',  label: 'Statistiques' },
+            { key: 'reviews',     label: 'Mes avis' },
+            { key: 'messages',    label: 'Messages' },
           ].map(({ key, label }) => (
             <button key={key} className={`tab-btn ${activeTab === key ? 'active' : ''}`} onClick={() => setActiveTab(key)}>
               {label}
@@ -164,6 +174,41 @@ function ProviderDashboard() {
                 { label: 'Services actifs',  value: statistics.totalServices || 0, icon: '📋' },
                 { label: 'Réputation',       value: `${statistics.reputation || 0}/5`, icon: '⭐' },
               ]} />
+            )}
+
+            {activeTab === 'reviews' && (
+              <div>
+                <h2 style={{ marginBottom: '1rem' }}>Mes avis reçus</h2>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th><th>Auteur</th><th>Score</th><th>Commentaire</th><th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviews.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.service_titre}</td>
+                        <td>{r.consumer_name}</td>
+                        <td>⭐ {r.score}/5</td>
+                        <td>{r.commentaire || '—'}</td>
+                        <td>{r.date_creation?.slice(0, 10)}</td>
+                      </tr>
+                    ))}
+                    {reviews.length === 0 && (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                          Aucun avis reçu pour le moment.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === 'messages' && (
+              <Messaging currentUserId={user?.id} />
             )}
           </>
         )}
