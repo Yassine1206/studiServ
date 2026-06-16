@@ -101,6 +101,7 @@ export const providersAPI = {
   createService: (data) => apiClient.post('/provider/services/', data),
   getOrders: () => apiClient.get('/provider/orders/'),
   getStatistics: () => apiClient.get('/provider/statistics/'),
+  getReviews: () => apiClient.get('/provider/reviews/'),
 };
 
 // ==================== CONSOMMATEURS ====================

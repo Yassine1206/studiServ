@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { consumersAPI, reviewsAPI } from '../../api/axios';
 import Sidebar from '../../components/Sidebar';
@@ -11,22 +11,29 @@ import ReviewModal from '../../components/ReviewModal';
 
 function ConsumerDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const [activeTab, setActiveTab]           = useState('overview');
+  
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab) => setSearchParams({ tab });
+
   const [orders, setOrders]                 = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const [reviews, setReviews]               = useState([]);
   const [loading, setLoading]               = useState(true);
   const [reviewOrder, setReviewOrder]       = useState(null);       
   useEffect(() => { fetchDashboardData(); }, []);
 
   const fetchDashboardData = async () => {
     try {
-     const [ordersRes, recsRes] = await Promise.all([
-  consumersAPI.getOrders(),
-  reviewsAPI.getSmartRecommendations(),
-]);
-setOrders(ordersRes.data);
-setRecommendations(recsRes.data.recommendations);
+     const [ordersRes, recsRes, reviewsRes] = await Promise.all([
+       consumersAPI.getOrders(),
+       reviewsAPI.getSmartRecommendations(),
+       consumersAPI.getRecommendations().catch(() => ({ data: [] })),
+     ]);
+     setOrders(ordersRes.data);
+     setRecommendations(recsRes.data.recommendations);
+     setReviews(reviewsRes.data || []);
     } catch {
       setOrders(getMockOrders());
       setRecommendations(getMockRecommendations());
@@ -69,6 +76,7 @@ setRecommendations(recsRes.data.recommendations);
             { key: 'overview',         label: 'Aperçu' },
             { key: 'orders',           label: `Commandes (${orders.length})` },
             { key: 'recommendations',  label: 'Recommandations' },
+            { key: 'reviews',          label: 'Mes avis' },
             { key: 'messages',         label: 'Messages' },
           ].map(({ key, label }) => (
             <button
@@ -179,9 +187,39 @@ setRecommendations(recsRes.data.recommendations);
               </div>
             )}
 
+            {activeTab === 'reviews' && (
+              <div>
+                <h2 style={{ marginBottom: '1rem' }}>Mes avis laissés</h2>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Service</th><th>Score</th><th>Commentaire</th><th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reviews.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.service_titre}</td>
+                        <td>⭐ {r.score}/5</td>
+                        <td>{r.commentaire || '—'}</td>
+                        <td>{r.date_creation?.slice(0, 10)}</td>
+                      </tr>
+                    ))}
+                    {reviews.length === 0 && (
+                      <tr>
+                        <td colSpan={4} style={{ textAlign: 'center', color: '#94a3b8' }}>
+                          Tu n'as pas encore laissé d'avis.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
             {activeTab === 'messages' && (
-  <Messaging currentUserId={user?.id} />
-)}
+              <Messaging currentUserId={user?.id} />
+            )}
           </>
         )}
       </div>

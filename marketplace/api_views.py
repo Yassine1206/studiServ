@@ -352,6 +352,23 @@ def api_provider_statistics(request):
     )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_provider_reviews(request):
+    """GET /api/provider/reviews/"""
+    try:
+        prestataire = request.user.compte.utilisateur.prestataire
+    except Exception:
+        return Response({"message": "Accès refusé."}, status=status.HTTP_403_FORBIDDEN)
+
+    reviews = Recommendation.objects.filter(
+        service__prestataire=prestataire
+    ).select_related("service", "consommateur__utilisateur").order_by("-date_creation")
+
+    serializer = RecommendationSerializer(reviews, many=True)
+    return Response(serializer.data)
+
+
 # ─── ADMINISTRATION ───────────────────────────────────────────────────────────
 
 @api_view(["GET"])
