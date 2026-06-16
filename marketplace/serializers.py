@@ -9,7 +9,7 @@ from .models import (
 )
 
 
-# ─── Helpers ─────────────────────────────────────────────────────────────────
+# ─── Helpers ──────────────────────────────────────────────────────────────
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
@@ -19,7 +19,7 @@ def get_tokens_for_user(user):
     }
 
 
-# ─── Auth ─────────────────────────────────────────────────────────────────────
+# ─── Auth ─────────────────────────────────────────────────────────────────
 
 class SignUpSerializer(serializers.Serializer):
     first_name   = serializers.CharField(max_length=100)
@@ -98,8 +98,8 @@ class SignUpSerializer(serializers.Serializer):
             prestataire = Prestataire.objects.create(utilisateur=utilisateur)
             if student_card:
                 prestataire.carte_etudiant = student_card
-                if getattr(self, "_card_confidence", "manual") == "high":
-                    prestataire.carte_verifiee = True
+                # NB: on ne marque JAMAIS la carte comme vérifiée automatiquement.
+                # L'admin doit l'approuver manuellement via le dashboard.
                 prestataire.save()
 
                 try:
@@ -125,7 +125,7 @@ class SignInSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
 
 
-# ─── Profil ───────────────────────────────────────────────────────────────────
+# ─── Profil ──────────────────────────────────────────────────────────────
 
 class ProfilSerializer(serializers.ModelSerializer):
     class Meta:
@@ -197,7 +197,7 @@ class UpdateProfileSerializer(serializers.Serializer):
         return user
 
 
-# ─── Services ─────────────────────────────────────────────────────────────────
+# ─── Services ──────────────────────────────────────────────────────────────
 
 class ServiceSerializer(serializers.ModelSerializer):
     provider_name = serializers.SerializerMethodField()
@@ -237,7 +237,7 @@ class ServiceCreateSerializer(serializers.ModelSerializer):
         return Service.objects.create(prestataire=prestataire, **validated_data)
 
 
-# ─── Demandes ─────────────────────────────────────────────────────────────────
+# ─── Demandes ─────────────────────────────────────────────────────────────
 
 class DemandeSerializer(serializers.ModelSerializer):
     service_titre = serializers.SerializerMethodField()
@@ -270,7 +270,7 @@ class DemandeCreateSerializer(serializers.ModelSerializer):
         return Demande.objects.create(consommateur=consommateur, **validated_data)
 
 
-# ─── Recommendations ──────────────────────────────────────────────────────────
+# ─── Recommendations ───────────────────────────────────────────────────────
 
 class RecommendationSerializer(serializers.ModelSerializer):
     service_titre = serializers.SerializerMethodField()
@@ -290,7 +290,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
         return str(obj.consommateur.utilisateur)
 
 
-# ─── Admin ────────────────────────────────────────────────────────────────────
+# ─── Admin ─────────────────────────────────────────────────────────────────
 
 class AdminUserSerializer(serializers.Serializer):
     id = serializers.IntegerField(source="pk")
