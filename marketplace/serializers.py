@@ -242,12 +242,13 @@ class ServiceCreateSerializer(serializers.ModelSerializer):
 class DemandeSerializer(serializers.ModelSerializer):
     service_titre = serializers.SerializerMethodField()
     provider_name = serializers.SerializerMethodField()
+    provider_user_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Demande
         fields = [
             "id", "titre", "description", "statut",
-            "date_creation", "service_titre", "provider_name",
+            "date_creation", "service_titre", "provider_name", "provider_user_id",
         ]
 
     def get_service_titre(self, obj):
@@ -257,6 +258,12 @@ class DemandeSerializer(serializers.ModelSerializer):
         if obj.service:
             return str(obj.service.prestataire.utilisateur)
         return None
+
+    def get_provider_user_id(self, obj):
+        try:
+            return obj.service.prestataire.utilisateur.compte.user.id
+        except Exception:
+            return None
 
 
 class DemandeCreateSerializer(serializers.ModelSerializer):
