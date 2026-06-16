@@ -6,6 +6,7 @@ import Sidebar from '../../components/Sidebar';
 import DashboardStats from '../../components/DashboardStats';
 import '../../styles/Dashboard.css';
 import Messaging from '../../components/Messaging';
+import DeliverablePanel from '../../components/DeliverablePanel';
 
 function ProviderDashboard() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ function ProviderDashboard() {
   const [showCreate, setShowCreate]     = useState(false);
   const [newService, setNewService]     = useState({ titre: '', description: '', categorie: '', prix: '', delai_livraison: '' });
   const [createError, setCreateError]   = useState('');
+  const [deliverableOrder, setDeliverableOrder] = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
@@ -161,31 +163,64 @@ function ProviderDashboard() {
             )}
 
             {activeTab === 'orders' && (
-              <table className="data-table">
-                <thead><tr><th>Service</th><th>Consommateur</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead>
-                <tbody>
-                  {orders.map(o => (
-                    <tr key={o.id}>
-                      <td>{o.service_titre}</td>
-                      <td>{o.consumer_name || o.provider_name}</td>
-                      <td><span className={`status-badge ${o.statut}`}>{statusLabel[o.statut] || o.statut}</span></td>
-                      <td>{o.date_creation?.slice(0, 10)}</td>
-                      <td>
-                        {o.statut === 'pending' && (
-                          <>
-                            <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'in_progress')}>Accepter</button>
-                            <button className="btn-action reject"  onClick={() => handleOrderAction(o.id, 'cancelled')}>Refuser</button>
-                          </>
-                        )}
-                        {o.statut === 'in_progress' && (
-                          <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'completed')}>Marquer livrée</button>
-                        )}
-                        {(o.statut === 'completed' || o.statut === 'cancelled') && <span style={{color:'#94a3b8'}}>—</span>}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <>
+                <table className="data-table">
+                  <thead><tr><th>Service</th><th>Consommateur</th><th>Statut</th><th>Date</th><th>Action</th></tr></thead>
+                  <tbody>
+                    {orders.map(o => (
+                      <tr key={o.id}>
+                        <td>{o.service_titre}</td>
+                        <td>{o.consumer_name || o.provider_name}</td>
+                        <td><span className={`status-badge ${o.statut}`}>{statusLabel[o.statut] || o.statut}</span></td>
+                        <td>{o.date_creation?.slice(0, 10)}</td>
+                        <td>
+                          {o.statut === 'pending' && (
+                            <>
+                              <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'in_progress')}>Accepter</button>
+                              <button className="btn-action reject"  onClick={() => handleOrderAction(o.id, 'cancelled')}>Refuser</button>
+                            </>
+                          )}
+                          {o.statut === 'in_progress' && (
+                            <>
+                              <button
+                                className="btn-action approve"
+                                style={{ background:'#6C63FF', marginRight:'0.4rem' }}
+                                onClick={() => setDeliverableOrder(o)}
+                              >
+                                📦 Déposer livrable
+                              </button>
+                              <button className="btn-action approve" onClick={() => handleOrderAction(o.id, 'completed')}>Marquer livrée</button>
+                            </>
+                          )}
+                          {(o.statut === 'completed' || o.statut === 'cancelled') && <span style={{color:'#94a3b8'}}>—</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {deliverableOrder && (
+                  <div style={{
+                    position:'fixed', top:0, left:0, right:0, bottom:0,
+                    background:'rgba(0,0,0,0.5)', display:'flex',
+                    alignItems:'center', justifyContent:'center', zIndex:1000,
+                  }}>
+                    <div style={{
+                      background:'#fff', borderRadius:'12px', padding:'2rem',
+                      maxWidth:'600px', width:'90%', maxHeight:'90vh', overflowY:'auto',
+                    }}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem' }}>
+                        <h2 style={{ margin:0 }}>Livrable — {deliverableOrder.service_titre}</h2>
+                        <button
+                          onClick={() => setDeliverableOrder(null)}
+                          style={{ background:'none', border:'none', fontSize:'1.5rem', cursor:'pointer' }}
+                        >×</button>
+                      </div>
+                      <DeliverablePanel orderId={deliverableOrder.id} />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
 
             {activeTab === 'statistics' && (
