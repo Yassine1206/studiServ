@@ -5,6 +5,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from . import api_views
+from .api_provider_public import api_provider_public_profile
 
 urlpatterns = [
     # ── Authentification ──────────────────────────────────
@@ -31,7 +32,7 @@ urlpatterns = [
     path("provider/orders/<int:demande_id>/status/", api_views.api_provider_update_order, name="api_provider_update_order"),
     path("provider/statistics/", api_views.api_provider_statistics, name="api_provider_stats"),
     path("provider/reviews/",    api_views.api_provider_reviews,    name="api_provider_reviews"),
-    path("providers/<int:provider_id>/", api_views.api_provider_public_profile, name="api_provider_public_profile"),
+    path("providers/<int:provider_id>/", api_provider_public_profile, name="api_provider_public_profile"),
 
     # ── Administration ─────────────────────────────────
     path("admin/users/",                       api_views.api_admin_users,         name="api_admin_users"),
