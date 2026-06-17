@@ -18,11 +18,12 @@ import AdminDashboard     from './pages/dashbords/AdminDashboard';
 import ConsumerProfile  from './pages/profiles/ConsumerProfile';
 import ProviderProfile  from './pages/profiles/ProviderProfile';
 import AdminProfile     from './pages/profiles/AdminProfile';
+import ProviderPublicProfile from './pages/ProviderPublicProfile';
 import ChatbotWidget from './components/ChatbotWidget'
 // Page 404
 import NotFound from './pages/NotFound';
 
-// ── Route protégée ────────────────────────────────────────────────────────────
+// ── Route protégée ────────────────────────────────────────────────────────
 function PrivateRoute({ requiredRole, children }) {
   const { isAuthenticated, role, loading } = useAuth();
 
@@ -39,7 +40,7 @@ function PrivateRoute({ requiredRole, children }) {
   return children;
 }
 
-// ── Route publique (redirige si déjà connecté) ────────────────────────────────
+// ── Route publique (redirige si déjà connecté) ──────────────────────────────
 function PublicRoute({ children }) {
   const { isAuthenticated, role, loading } = useAuth();
 
@@ -57,13 +58,14 @@ function PublicRoute({ children }) {
   return children;
 }
 
-// ── Routes de l'application ───────────────────────────────────────────────────
+// ── Routes de l'application ───────────────────────────────────────────────
 function AppRoutes() {
   return (
     <>
     <Routes>
       {/* Public */}
       <Route path="/" element={<Home />} />
+      <Route path="/providers/:id" element={<ProviderPublicProfile />} />
 
       <Route path="/signin" element={
         <PublicRoute><SignIn /></PublicRoute>
